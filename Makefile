@@ -1,3 +1,5 @@
+include settings.mk
+
 CXX:=$(V2R_SDK_ROOT)/codesourcery/arm-2013.05/bin/arm-none-linux-gnueabi-g++
 
 CFLAGS:=\

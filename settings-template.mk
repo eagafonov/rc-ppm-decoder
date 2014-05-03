@@ -1,0 +1,2 @@
+# Path to virt2real SDK
+V2R_SDK_ROOT:=<PATH/TO/V2R/SDK/ROOT>
