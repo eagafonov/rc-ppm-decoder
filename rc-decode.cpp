@@ -31,6 +31,7 @@ LOW ___|   |_____|   |__________|   |____|   |______|   |_______________________
 
 
 #define  GAP 4000
+#define GPIO_MONITOR_PIN 3
 
 int main( int argc, char **argv )
 {
@@ -46,7 +47,23 @@ int main( int argc, char **argv )
     // set binary read mode
     ioctl( fileno( fs ), GPIO_EVENT_IOCTL_SET_READ_MODE, 1 );
 
+    // setup GPIO Monitoring pins
+
+    GPIO_EventMonitor_t gpio_minotor = {0};
+
+    // Monitr pin for raising edges
+    gpio_minotor.gpio = GPIO_MONITOR_PIN; // TODO read from command line options
+    gpio_minotor.edgeType = GPIO_EventRisingEdge; // It is important to monitor rising edges only to 
+    gpio_minotor.debounceMilliSec = 0;
+    gpio_minotor.onOff = 1;
+
+    ioctl( fileno( fs ), GPIO_EVENT_IOCTL_MONITOR_GPIO, &gpio_minotor);
+
+
     printf("reading PPM:\n");
+
+    printf("If you don't see fast running output log, make sure GPIO%d is set-up for input.\n", GPIO_MONITOR_PIN);
+    printf("The following command will do it for you:\necho \"set gpio 3 input\" > /dev/v2r_gpio\n\n");
 
     long last_usec = 0;
 
@@ -60,8 +77,8 @@ int main( int argc, char **argv )
 
         if (( numBytes = fread( &gpioEvent, 1, sizeof( gpioEvent ), fs )) == sizeof( gpioEvent ))
         {
-            if (gpioEvent.edgeType == GPIO_EventFallingEdge) {
-                // Ignore falls
+            // Filter out alien pin events
+            if (gpioEvent.gpio != GPIO_MONITOR_PIN) {
                 continue;
             }
 
